@@ -15,50 +15,46 @@ router.get('/signup', (req, res, next) => {
 });
 
 router.post("/signup", (req, res, next) => {
-  let username = req.body.username;
-  let email = req.body.email;
-  let password = req.body.password;
+  const {username, email, password} = req.body;
 
-  if (username === "" || password === "" || email === "") {
-    res.redirect("/", {
-      errorMessage: "Indicate a username, email and a password to sign up"
-    });
-    return;
-  }
+  if (username !== "" && password !== "" && email !== "") {
+    User.findOne({username}, 'username')
+      .then(userFinded => {
+        let salt = bcrypt.genSaltSync(bcryptSalt);
+        let hashPass = bcrypt.hashSync(password, salt);
 
-  User.findOne({ "username": username }, "username", (err, user) => {
-    if (user !== null) {
-      res.render("authentication/signup", {
-        errorMessage: "The username already exists"
-      });
-      return;
-    }
-
-    let salt = bcrypt.genSaltSync(bcryptSalt);
-    let hashPass = bcrypt.hashSync(password, salt);
-
-    let newUser = User({
-      username,
-      email,
-      password: hashPass
-    });
-
-    newUser.save((err) => {
-      if (err) {
-        res.render("authentication/signup", {
-          errorMessage: "Something went wrong when signing up"
+        let newUser = User({
+          username,
+          email,
+          password: hashPass
         });
-      } else {
-        res.redirect('/');
-      }
+
+        newUser.save()
+          .then(() => {
+            res.redirect('/');
+          })
+          .catch(error => {
+            res.render('authentication/signup', {
+              errorMessage: 'Some error has occurred'
+            });
+          });
+      })
+      .catch(error => {
+        res.render('authentication/signup', {
+          errorMessage: 'Some error has occurred'
+        });
+      });
+
+  } else{
+    res.render("authentication/signup", {
+      errorMessage: 'Fill al fields!'
     });
-  });
+  }
 });
 
 //Post for log in
 router.post("/", (req, res, next) => {
-  let username = req.body.username;
-  let password = req.body.password;
+  const {username, password} = req.body;
 
   if (username === "" || password === "") {
     res.render("authentication/login", {

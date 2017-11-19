@@ -3,16 +3,17 @@ const router = express.Router();
 const moment = require("moment");
 const User = require("../models/User");
 
-//For protect the path
+let id;
+
+//Ver perfil
 router.get('/', (req, res, next) => {
   if (!req.session.currentUser) {
-    res.redirect('/');//Esto te lleva a buscar la ruta en app.js
+    res.redirect('/');
   }else {
-    let id = req.session.currentUser._id;
-    console.log(id);
+    id = req.session.currentUser._id;
     User.findById(id)
       .then((user) => {
-        res.render('profile/show', {//Esto pinta la vista de la ruta indicada, llevando consigo el objeto en el segundo parámetro
+        res.render('profile/show', {
           user : user
         });
       }).catch((err) => {
@@ -21,9 +22,42 @@ router.get('/', (req, res, next) => {
     }
 });
 
-//Para otro momento la edición del perfil
-// router.get('/:id', (req, res, next) => {
-//
-// });
+//Editar perfil
+router.get('/:id', (req, res, next) => {
+  id = req.params.id;
+  console.log(id);
+  User.findById(id)
+    .then(user => {
+      res.render('profile/edit', {
+        user
+      })
+    })
+    .catch(error => {
+      res.render('profile/show', {
+        errorMessage: 'Ha habido algún tipo de error'
+      })
+    });
+});
+
+router.post('/edit', (req, res,next) => {
+  const dataToUpdate = {
+    username: req.body.name,
+    email: req.body.email,
+    summary: req.body.summary,
+    imageUrl: req.body.imageUrl,
+    company: req.body.company,
+    jobTitle: req.body.jobtitle
+  }
+
+  console.log(req.body.username, req.body.email, req.body.summary, req.body.imageUrl, req.body.company, req.body.jobTitle);
+
+  User.findByIdAndUpdate(id, dataToUpdate)
+    .then(() => {
+      res.redirect('/profile');
+    })
+    .catch(error => {
+      errorMessage: error.message
+    });
+});
 
 module.exports = router;

@@ -1,6 +1,6 @@
 <h2>EDIT PAGE</h2>
 
-<form action="profile/<%= user.id %>" method="POST">
+<form action="/profile/edit" method="POST">
   <label for="name">Name</label>
   <input type="text" id="name" name="name" value="<%= user.username %>">
 
@@ -19,5 +19,5 @@
   <label for="name">Job Title</label>
   <input type="jobtitle" id="jobtitle" name="jobtitle" value="<%= user.jobTitle %>">
 
-  <button type="submit">Edit Celebrity!</button>
+  <button type="submit">Edit your profile!</button>
 </form>
